@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template_string
 from datetime import datetime
 
-app = Flask(**name**)
+app = Flask(__name__)
 
 # 現在地データを保存
 
@@ -113,4 +113,5 @@ return jsonify(location_data)
 
 if **name** == "**main**":
 app.run()
+
 
