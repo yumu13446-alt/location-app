@@ -1,6 +1,8 @@
-from flask import Flask, render_template_string
+from flask import Flask, request, jsonify, render_template_string
 
 app = Flask(__name__)
+
+location_data = {}
 
 html = """
 <!DOCTYPE html>
@@ -8,28 +10,50 @@ html = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>研究室現在地共有</title>
-
-<style>
-body { text-align:center; font-family: Arial; }
-button { font-size:20px; margin:10px; padding:15px; }
-</style>
-
 </head>
 
-<body>
+<body style="text-align:center;font-family:Arial">
 
-<h2>今どこにいますか？</h2>
+<h2>現在地共有</h2>
+
+<input id="name" placeholder="名前">
+
+<br><br>
 
 <button onclick="setLocation('実験室')">実験室</button>
 <button onclick="setLocation('居室')">居室</button>
 <button onclick="setLocation('大学')">大学</button>
 
-<p id="status">未選択</p>
+<h3>みんなの現在地</h3>
+
+<div id="list"></div>
 
 <script>
+
 function setLocation(place){
-    document.getElementById("status").innerText = "現在地: " + place;
+    const name = document.getElementById("name").value;
+
+    fetch("/update",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({name:name,location:place})
+    });
 }
+
+function load(){
+    fetch("/data")
+    .then(r=>r.json())
+    .then(data=>{
+        let html="";
+        for(let n in data){
+            html += "<p>"+n+" : "+data[n]+"</p>";
+        }
+        document.getElementById("list").innerHTML=html;
+    });
+}
+
+setInterval(load,2000);
+
 </script>
 
 </body>
@@ -40,6 +64,15 @@ function setLocation(place){
 def home():
     return render_template_string(html)
 
+@app.route("/update",methods=["POST"])
+def update():
+    data = request.json
+    location_data[data["name"]] = data["location"]
+    return "ok"
+
+@app.route("/data")
+def data():
+    return jsonify(location_data)
+
 if __name__ == "__main__":
     app.run()
-
