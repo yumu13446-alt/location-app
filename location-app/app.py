@@ -3,36 +3,27 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# 現在地データを保存
-
 location_data = {}
 
 html = """
-
 <!DOCTYPE html>
-
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>研究室現在地共有</title>
-
-<style>
-body { text-align:center; font-family: Arial; }
-button { font-size:20px; margin:10px; padding:15px; }
-input { font-size:18px; padding:5px; }
-</style>
-
 </head>
 
-<body>
+<body style="text-align:center;font-family:Arial">
 
-<h2>研究室 現在地共有</h2>
+<h2>研究室現在地共有</h2>
 
-<input id="name" placeholder="名前を入力">
+<input id="name" placeholder="名前">
 
 <br><br>
 
-<button onclick="setLocation('実験室')">実験室</button> <button onclick="setLocation('居室')">居室</button> <button onclick="setLocation('大学')">大学</button>
+<button onclick="setLocation('実験室')">実験室</button>
+<button onclick="setLocation('居室')">居室</button>
+<button onclick="setLocation('大学')">大学</button>
 
 <h3>みんなの現在地</h3>
 
@@ -47,12 +38,8 @@ function setLocation(place){
     fetch("/update",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            name:name,
-            location:place
-        })
+        body:JSON.stringify({name:name,location:place})
     });
-
 }
 
 function load(){
@@ -64,19 +51,12 @@ function load(){
         let html="";
 
         for(let n in data){
-            html += "<p>" 
-                 + n 
-                 + " : " 
-                 + data[n].location 
-                 + " (" 
-                 + data[n].time 
-                 + ")</p>";
+            html += "<p>" + n + " : " + data[n].location + " (" + data[n].time + ")</p>";
         }
 
         document.getElementById("list").innerHTML = html;
 
     });
-
 }
 
 setInterval(load,2000);
@@ -89,29 +69,23 @@ setInterval(load,2000);
 
 @app.route("/")
 def home():
-return render_template_string(html)
+    return render_template_string(html)
 
 @app.route("/update", methods=["POST"])
 def update():
+    data = request.json
+    now = datetime.now().strftime("%H:%M:%S")
 
-```
-data = request.json
+    location_data[data["name"]] = {
+        "location": data["location"],
+        "time": now
+    }
 
-now = datetime.now().strftime("%H:%M:%S")
-
-location_data[data["name"]] = {
-    "location": data["location"],
-    "time": now
-}
-
-return "ok"
-```
+    return "ok"
 
 @app.route("/data")
 def data():
-return jsonify(location_data)
+    return jsonify(location_data)
 
-if **name** == "**main**":
-app.run()
-
-
+if __name__ == "__main__":
+    app.run()
