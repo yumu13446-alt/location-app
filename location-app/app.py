@@ -1,6 +1,18 @@
 from flask import Flask, request, jsonify, render_template_string
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import threading
+import time
+import requests
+
+def keep_alive():
+    while True:
+        try:
+            requests.get("https://location-app-6.onrender.com")
+            print("keep alive")
+        except:
+            pass
+        time.sleep(300)  # 300秒 = 5分
 
 app = Flask(__name__)
 
@@ -143,4 +155,8 @@ def data():
 
 
 if __name__ == "__main__":
+
+    t = threading.Thread(target=keep_alive)
+    t.start()
+
     app.run()
